@@ -100,10 +100,11 @@ if True:
 
         #Training
         if True:
-            n_iters = 1000
+            n_iters = 10000
+            lr = 0.001
             #Training for old data
             model1 = net()
-            optimizer = torch.optim.Adam(model1.parameters(), lr=0.001) # fallback optimizer
+            optimizer = torch.optim.Adam(model1.parameters(), lr=lr) # fallback optimizer
             criterion = torch.nn.MSELoss()  
             for epoch in range(n_iters):
                 model1.train()
@@ -115,7 +116,7 @@ if True:
                 loss.backward()
 
                 optimizer.step()
-                if epoch%100==0:
+                if epoch%1000==0:
                     print('Epoch:',epoch,' loss:',loss.item())
             out = model1(x1)
             weights1 = []
@@ -125,7 +126,7 @@ if True:
 
             #Training for new data
             model2 = net()
-            optimizer = torch.optim.Adam(model2.parameters(), lr=0.001) # fallback optimizer
+            optimizer = torch.optim.Adam(model2.parameters(), lr=lr) # fallback optimizer
             criterion = torch.nn.MSELoss()  
             for epoch in range(n_iters):
                 model2.train()
@@ -137,7 +138,7 @@ if True:
                 loss.backward()
 
                 optimizer.step()
-                if epoch%100==0:
+                if epoch%1000==0:
                     print('Epoch:',epoch,' loss:',loss.item())
             out = model2(x1)
             weights2 = []
@@ -158,7 +159,7 @@ if True:
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001) # fallback optimizer
     criterion = torch.nn.MSELoss()  
     print('\n\n\n***Training classifier***\n')
-    for epoch in range(10000):
+    for epoch in range(100000):
         model.train()
         optimizer.zero_grad()
         
@@ -170,7 +171,14 @@ if True:
         if epoch%100==0:
             print('Epoch:',epoch,' loss:',loss.item())
     preds = model(x_test).detach().numpy()
-
+    for i in range(preds[0]):
+        if preds[i,0]<1:
+            preds[i,0] = 1.0001
+        if preds[i,2]<1.3:
+            preds[i,2] = 1.3001
+        elif preds[i,2]>2.5:
+            preds[i,2] = 2.4999
+        
     pd.DataFrame(preds).to_csv('./results.csv', header=False, index=False)
 
 #Testing regression
@@ -211,7 +219,7 @@ if False:
         n_iters = 100000
         #Training for old data
         model1 = net()
-        optimizer = torch.optim.Adam(model1.parameters(), lr=0.001) # fallback optimizer
+        optimizer = torch.optim.Adam(model1.parameters(), lr=0.001)#, weight_decay=0.00001) # fallback optimizer
         criterion = torch.nn.MSELoss()  
         for epoch in range(n_iters):
             model1.train()
